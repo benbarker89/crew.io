@@ -1,0 +1,57 @@
+# Barker v ESHT Case Management System - Python Dependencies
+
+# Core
+python-dotenv>=1.0.0
+pyyaml>=6.0
+click>=8.1.0
+schedule>=1.2.0
+
+# Google APIs
+google-auth>=2.23.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.1.1
+google-api-python-client>=2.100.0
+
+# Slack
+slack-sdk>=3.23.0
+
+# Notion
+notion-client>=2.2.0
+
+# Todoist
+todoist-api-python>=2.1.0
+
+# Supabase
+supabase>=2.0.0
+
+# PDF Processing
+PyPDF2>=3.0.0
+pypdf>=3.17.0
+pdf2image>=1.16.3
+Pillow>=10.0.0
+requests>=2.31.0
+
+# Data Processing
+pandas>=2.1.0
+openpyxl>=3.1.0
+xlsxwriter>=3.1.0
+
+# Hashing & Cryptography
+hashlib-additional>=1.0.0
+
+# Date/Time
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# Utilities
+tqdm>=4.66.0
+retry>=0.9.2
+tenacity>=8.2.0
+
+# Logging
+structlog>=23.2.0
+python-json-logger>=2.0.7
+
+# Testing (optional)
+pytest>=7.4.0
+pytest-cov>=4.1.0

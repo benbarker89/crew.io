@@ -1,0 +1,232 @@
+# Barker v ESHT - System Configuration
+
+case:
+  name: "Barker v ESHT"
+  reference: "BB_ESHT"
+  timezone: "Europe/London"
+
+drive_structure:
+  root: "EvidenceVault/ESHT"
+  folders:
+    - "00_Originals"
+    - "01_Normalised_PDF"
+    - "02_Email_Sources"
+    - "03_Attachments"
+    - "05_Indexes"
+    - "97_Logs"
+    - "99_Duplicates"
+    - "Bundles"
+
+database_schema:
+  evidence:
+    fields:
+      - name: "id"
+        type: "uuid"
+        primary: true
+      - name: "exhibit_code"
+        type: "text"
+      - name: "document_type"
+        type: "text"
+      - name: "source_path"
+        type: "text"
+      - name: "normalised_path"
+        type: "text"
+      - name: "sha256"
+        type: "text"
+        unique: true
+      - name: "file_size"
+        type: "bigint"
+      - name: "page_count"
+        type: "integer"
+      - name: "date_created"
+        type: "timestamp"
+      - name: "date_modified"
+        type: "timestamp"
+      - name: "tags"
+        type: "text[]"
+      - name: "used_in"
+        type: "text"
+      - name: "notes"
+        type: "text"
+      - name: "metadata"
+        type: "jsonb"
+
+  issues:
+    fields:
+      - name: "id"
+        type: "uuid"
+        primary: true
+      - name: "issue_code"
+        type: "text"
+        unique: true
+      - name: "title"
+        type: "text"
+      - name: "description"
+        type: "text"
+      - name: "category"
+        type: "text"
+      - name: "priority"
+        type: "text"
+      - name: "status"
+        type: "text"
+      - name: "evidence_ids"
+        type: "uuid[]"
+      - name: "created_at"
+        type: "timestamp"
+      - name: "updated_at"
+        type: "timestamp"
+
+  timeline:
+    fields:
+      - name: "id"
+        type: "uuid"
+        primary: true
+      - name: "event_date"
+        type: "date"
+      - name: "event_time"
+        type: "time"
+      - name: "title"
+        type: "text"
+      - name: "description"
+        type: "text"
+      - name: "category"
+        type: "text"
+      - name: "participants"
+        type: "text[]"
+      - name: "evidence_ids"
+        type: "uuid[]"
+      - name: "issue_ids"
+        type: "uuid[]"
+      - name: "location"
+        type: "text"
+      - name: "metadata"
+        type: "jsonb"
+      - name: "created_at"
+        type: "timestamp"
+
+  tasks:
+    fields:
+      - name: "id"
+        type: "uuid"
+        primary: true
+      - name: "title"
+        type: "text"
+      - name: "description"
+        type: "text"
+      - name: "workstream"
+        type: "text"
+      - name: "priority"
+        type: "text"
+      - name: "status"
+        type: "text"
+      - name: "assigned_to"
+        type: "text"
+      - name: "due_date"
+        type: "date"
+      - name: "completed_at"
+        type: "timestamp"
+      - name: "evidence_ids"
+        type: "uuid[]"
+      - name: "issue_ids"
+        type: "uuid[]"
+      - name: "todoist_id"
+        type: "text"
+      - name: "created_at"
+        type: "timestamp"
+      - name: "updated_at"
+        type: "timestamp"
+
+automations:
+  nightly_delta_sweep:
+    enabled: true
+    schedule: "0 2 * * *"  # 02:00 daily
+    search_patterns:
+      - "ESHT"
+      - "@nhs.net"
+      - "East Sussex Healthcare"
+    actions:
+      - "normalize_pdf"
+      - "compute_hash"
+      - "deduplicate"
+      - "update_index"
+      - "slack_notification"
+
+  weekly_aeon_export:
+    enabled: true
+    schedule: "0 18 * * 5"  # 18:00 Friday
+    export_path: "05_Indexes/AEON_Timeline_Export.csv"
+    actions:
+      - "export_timeline"
+      - "generate_histogram"
+      - "slack_notification"
+
+  monthly_bundle_builder:
+    enabled: false  # Manual trigger
+    bundle_path: "Bundles/ESHT_Bundle_{YYYYMM}"
+    stamp_template: "{ExhibitCode} • Page {page} of {total}"
+    actions:
+      - "gather_exhibits"
+      - "sort_by_code"
+      - "merge_pdfs"
+      - "stamp_pages"
+      - "generate_index"
+      - "slack_notification"
+
+  weekly_kpi_report:
+    enabled: true
+    schedule: "15 18 * * 5"  # 18:15 Friday
+    report_path: "05_Indexes/BB_ESHT_KPI_Report.xlsx"
+    metrics:
+      - "evidence_with_exhibit_codes"
+      - "issues_coverage"
+      - "timeline_completeness"
+      - "open_tasks_by_workstream"
+      - "hearing_readiness"
+    actions:
+      - "generate_report"
+      - "create_snapshot"
+      - "slack_notification"
+
+integrations:
+  google_drive:
+    enabled: true
+    rate_limit: 10  # requests per second
+    retry_attempts: 3
+
+  google_sheets:
+    enabled: true
+    rate_limit: 5
+
+  google_calendar:
+    enabled: true
+    rate_limit: 5
+
+  slack:
+    enabled: true
+    rate_limit: 1
+
+  notion:
+    enabled: true
+    rate_limit: 3
+
+  todoist:
+    enabled: true
+    rate_limit: 5
+
+  pdfco:
+    enabled: true
+    rate_limit: 2
+
+  supabase:
+    enabled: true
+    connection_pool: 10
+
+logging:
+  level: "INFO"
+  format: "json"
+  rotation: "daily"
+  retention_days: 90
+  paths:
+    system: "97_Logs/system"
+    automation: "97_Logs/automation"
+    error: "97_Logs/error"
