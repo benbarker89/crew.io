@@ -18,6 +18,11 @@ from models import (
 )
 from goal_tracker import GoalTracker
 from next_step_engine import NextStepEngine
+from bundle_generator import BundleGenerator
+from search import SearchEngine
+from email_parser import EmailParser
+from template_engine import TemplateEngine
+from export import ExportEngine
 
 app = FastAPI(title="Personal Legal Case Management System")
 
@@ -463,6 +468,351 @@ def get_case_notes(case_id: int, db: Session = Depends(get_db)):
     return {"notes": notes, "total": len(notes)}
 
 
+# ============ PDF BUNDLE GENERATION ENDPOINTS ============
+
+@app.post("/api/cases/{case_id}/generate-bundle")
+def generate_bundle(
+    case_id: int,
+    document_ids: List[int],
+    bundle_type: str = "hearing",
+    start_page: int = 1,
+    db: Session = Depends(get_db)
+):
+    """Generate PDF bundle from selected documents"""
+    try:
+        generator = BundleGenerator(db, case_id)
+        result = generator.generate_bundle(
+            document_ids=document_ids,
+            bundle_type=bundle_type,
+            start_page=start_page
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/cases/{case_id}/bundle/documents")
+def get_bundle_documents(case_id: int, category: Optional[str] = None, db: Session = Depends(get_db)):
+    """Get available documents for bundling"""
+    try:
+        generator = BundleGenerator(db, case_id)
+        documents = generator.get_available_documents(category=category)
+        return {"documents": documents, "total": len(documents)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/cases/{case_id}/generate-chronological-bundle")
+def generate_chronological_bundle(
+    case_id: int,
+    category: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """Generate chronological bundle of all case documents"""
+    try:
+        generator = BundleGenerator(db, case_id)
+        result = generator.generate_chronological_bundle(category=category)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============ SEARCH ENDPOINTS ============
+
+@app.get("/api/search/documents")
+def search_documents(
+    query: str,
+    case_id: Optional[int] = None,
+    category: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """Search documents with full-text search"""
+    try:
+        search_engine = SearchEngine(db)
+        results = search_engine.search_documents(
+            query=query,
+            case_id=case_id,
+            category=category,
+            status=status,
+            limit=limit
+        )
+        return {"results": results, "total": len(results), "query": query}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/search/notes")
+def search_notes(
+    query: str,
+    case_id: Optional[int] = None,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """Search notes with full-text search"""
+    try:
+        search_engine = SearchEngine(db)
+        results = search_engine.search_notes(query=query, case_id=case_id, limit=limit)
+        return {"results": results, "total": len(results), "query": query}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/search/timeline")
+def search_timeline(
+    query: str,
+    case_id: Optional[int] = None,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """Search timeline events with full-text search"""
+    try:
+        search_engine = SearchEngine(db)
+        results = search_engine.search_timeline(query=query, case_id=case_id, limit=limit)
+        return {"results": results, "total": len(results), "query": query}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/search/all")
+def search_all(
+    query: str,
+    case_id: Optional[int] = None,
+    limit_per_type: int = 20,
+    db: Session = Depends(get_db)
+):
+    """Search across all content types"""
+    try:
+        search_engine = SearchEngine(db)
+        results = search_engine.search_all(query=query, case_id=case_id, limit_per_type=limit_per_type)
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/search/reindex")
+def reindex_all_content(db: Session = Depends(get_db)):
+    """Reindex all searchable content"""
+    try:
+        search_engine = SearchEngine(db)
+        doc_result = search_engine.reindex_all_documents()
+        note_result = search_engine.reindex_all_notes()
+        timeline_result = search_engine.reindex_all_timeline()
+
+        return {
+            "success": True,
+            "documents": doc_result,
+            "notes": note_result,
+            "timeline": timeline_result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/search/statistics")
+def get_search_statistics(db: Session = Depends(get_db)):
+    """Get search index statistics"""
+    try:
+        search_engine = SearchEngine(db)
+        return search_engine.get_search_statistics()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============ EMAIL PARSING ENDPOINTS ============
+
+@app.post("/api/cases/{case_id}/import-email")
+async def import_email(
+    case_id: int,
+    file: UploadFile = File(...),
+    direction: str = "Received",
+    save_attachments: bool = True,
+    db: Session = Depends(get_db)
+):
+    """Import email file (.eml or .msg) into case"""
+    try:
+        # Save uploaded email file temporarily
+        temp_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'temp')
+        os.makedirs(temp_dir, exist_ok=True)
+
+        temp_path = os.path.join(temp_dir, file.filename)
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Parse and import email
+        parser = EmailParser(db, case_id)
+        result = parser.import_email_to_case(
+            file_path=temp_path,
+            direction=direction,
+            save_attachments=save_attachments
+        )
+
+        # Clean up temp file
+        os.remove(temp_path)
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/cases/{case_id}/parse-email")
+async def parse_email(
+    case_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Parse email file and return metadata without importing"""
+    try:
+        # Save uploaded email file temporarily
+        temp_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'temp')
+        os.makedirs(temp_dir, exist_ok=True)
+
+        temp_path = os.path.join(temp_dir, file.filename)
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Parse email
+        parser = EmailParser(db, case_id)
+        result = parser.parse_email_file(temp_path)
+
+        # Clean up temp file
+        os.remove(temp_path)
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============ TEMPLATE ENGINE ENDPOINTS ============
+
+@app.get("/api/templates")
+def get_templates(db: Session = Depends(get_db)):
+    """Get available document templates"""
+    try:
+        # Use a dummy case_id for listing templates
+        engine = TemplateEngine(db, 1)
+        templates = engine.get_available_templates()
+        return {"templates": templates, "total": len(templates)}
+    except Exception as e:
+        # If no cases exist, return empty list
+        return {"templates": [], "total": 0}
+
+
+@app.post("/api/cases/{case_id}/generate-from-template")
+def generate_from_template(
+    case_id: int,
+    template_id: str,
+    variables: Dict,
+    output_format: str = "docx",
+    db: Session = Depends(get_db)
+):
+    """Generate document from template"""
+    try:
+        engine = TemplateEngine(db, case_id)
+        result = engine.generate_document_from_template(
+            template_id=template_id,
+            variables=variables,
+            output_format=output_format
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/cases/{case_id}/template-preview/{template_id}")
+def get_template_preview(
+    case_id: int,
+    template_id: str,
+    db: Session = Depends(get_db)
+):
+    """Get template preview with case variables"""
+    try:
+        engine = TemplateEngine(db, case_id)
+        result = engine.get_template_preview(template_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============ EXPORT ENDPOINTS ============
+
+@app.get("/api/cases/{case_id}/export/summary-word")
+def export_summary_word(case_id: int, db: Session = Depends(get_db)):
+    """Export case summary to Word document"""
+    try:
+        exporter = ExportEngine(db, case_id)
+        result = exporter.export_case_summary_word()
+
+        if result.get('success'):
+            return FileResponse(
+                result['file_path'],
+                filename=result['filename'],
+                media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            )
+        else:
+            raise HTTPException(status_code=500, detail=result.get('error'))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/cases/{case_id}/export/summary-pdf")
+def export_summary_pdf(case_id: int, db: Session = Depends(get_db)):
+    """Export case summary to PDF"""
+    try:
+        exporter = ExportEngine(db, case_id)
+        result = exporter.export_case_summary_pdf()
+
+        if result.get('success'):
+            return FileResponse(
+                result['file_path'],
+                filename=result['filename'],
+                media_type='application/pdf'
+            )
+        else:
+            raise HTTPException(status_code=500, detail=result.get('error'))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/cases/{case_id}/export/timeline-word")
+def export_timeline_word(case_id: int, db: Session = Depends(get_db)):
+    """Export timeline/chronology to Word document"""
+    try:
+        exporter = ExportEngine(db, case_id)
+        result = exporter.export_timeline_word()
+
+        if result.get('success'):
+            return FileResponse(
+                result['file_path'],
+                filename=result['filename'],
+                media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            )
+        else:
+            raise HTTPException(status_code=500, detail=result.get('error'))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/cases/{case_id}/export/notes-word")
+def export_notes_word(case_id: int, db: Session = Depends(get_db)):
+    """Export case notes to Word document"""
+    try:
+        exporter = ExportEngine(db, case_id)
+        result = exporter.export_notes_word()
+
+        if result.get('success'):
+            return FileResponse(
+                result['file_path'],
+                filename=result['filename'],
+                media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            )
+        else:
+            raise HTTPException(status_code=500, detail=result.get('error'))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============ HEALTH CHECK ============
 
 @app.get("/api/health")
@@ -474,4 +824,4 @@ def health_check():
 @app.get("/")
 def root():
     """Root endpoint"""
-    return {"message": "Legal Case Management System API", "version": "1.0.0"}
+    return {"message": "Legal Case Management System API", "version": "2.0.0 - Phase 2 & 3"}

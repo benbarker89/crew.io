@@ -1,6 +1,8 @@
 # Personal Legal Case Management System
 
-A comprehensive, single-user legal case management system designed for managing UK tribunal litigation, employment law cases, and regulatory investigations. Features intelligent "next step" recommendations and mission goal tracking.
+A comprehensive, single-user legal case management system designed for managing UK tribunal litigation, employment law cases, and regulatory investigations. Features intelligent "next step" recommendations, mission goal tracking, PDF bundle generation, full-text search, and advanced automation.
+
+**Version 2.0.0** - Now with Phase 2 & 3 advanced features!
 
 ## 🎯 Key Features
 
@@ -49,6 +51,43 @@ A comprehensive, single-user legal case management system designed for managing 
 - Free-form note-taking per case
 - Note types: Journal, Strategy, Research, Meeting
 - Tag-based organization
+
+### ✨ **NEW - Phase 2 & 3 Features**
+
+### 9. **PDF Bundle Generation** 📦
+- Generate professional legal document bundles with automated cover page and TOC
+- Automatic page numbering and exhibit references
+- Multiple bundle types (hearing, disclosure, trial, chronological)
+- Hyperlinked table of contents
+- Paginated PDF output ready for tribunal submission
+
+### 10. **Full-Text Search (SQLite FTS5)** 🔍
+- Search across all documents, notes, and timeline events
+- Advanced filtering by category, date range, and status
+- Highlighted search snippets
+- Relevance scoring
+- Boolean operators and phrase searches
+
+### 11. **Email Parsing & Auto-Logging** 📧
+- Import .eml and .msg email files
+- Auto-extract sender, recipient, subject, and dates
+- Save email attachments as documents
+- Automatically create correspondence log entries
+- Auto-create timeline events for communications
+
+### 12. **Template-Based Document Generation** 📝
+- Generate legal documents from customizable templates
+- Built-in templates: Witness Statements, Subject Access Requests, Disclosure Requests
+- Jinja2 template engine with variable substitution
+- Auto-populate case data into templates
+- Export to Word (.docx) or text format
+
+### 13. **Word/PDF Export** 📄
+- Export case summaries to Word or PDF
+- Export timeline/chronology for witness statements
+- Export case notes with formatting
+- Professional formatting ready for printing
+- Share case data with legal advisors
 
 ## 🚀 Getting Started
 
@@ -225,6 +264,34 @@ Tables:
 - `GET /api/cases/{case_id}/progress` - Get case progress
 - `GET /api/dashboard/summary` - Get dashboard summary
 
+### ✨ NEW - Bundle Generation
+- `POST /api/cases/{case_id}/generate-bundle` - Generate PDF bundle
+- `POST /api/cases/{case_id}/generate-chronological-bundle` - Generate chronological bundle
+- `GET /api/cases/{case_id}/bundle/documents` - Get documents for bundling
+
+### ✨ NEW - Full-Text Search
+- `GET /api/search/documents` - Search documents
+- `GET /api/search/notes` - Search notes
+- `GET /api/search/timeline` - Search timeline events
+- `GET /api/search/all` - Search all content
+- `POST /api/search/reindex` - Reindex all content
+- `GET /api/search/statistics` - Get search statistics
+
+### ✨ NEW - Email Parsing
+- `POST /api/cases/{case_id}/import-email` - Import email file
+- `POST /api/cases/{case_id}/parse-email` - Parse email (preview only)
+
+### ✨ NEW - Templates
+- `GET /api/templates` - Get available templates
+- `POST /api/cases/{case_id}/generate-from-template` - Generate document from template
+- `GET /api/cases/{case_id}/template-preview/{template_id}` - Preview template
+
+### ✨ NEW - Export
+- `GET /api/cases/{case_id}/export/summary-word` - Export case summary to Word
+- `GET /api/cases/{case_id}/export/summary-pdf` - Export case summary to PDF
+- `GET /api/cases/{case_id}/export/timeline-word` - Export timeline to Word
+- `GET /api/cases/{case_id}/export/notes-word` - Export notes to Word
+
 Full API documentation available at `http://localhost:8000/docs`
 
 ## 🎨 Customization
@@ -320,18 +387,27 @@ Ensure the frontend is accessed via the correct URL:
 - Use `http://localhost:8000/frontend/index.html`
 - Not `file:///path/to/index.html`
 
-## 🚧 Future Enhancements (Phase 2 & 3)
+## ✅ Phase 2 & 3 - COMPLETED!
 
-- [ ] PDF bundle generation with hyperlinked index
-- [ ] Full-text search across documents (SQLite FTS5)
-- [ ] Email parsing and auto-logging
-- [ ] Auto-detect deadlines from court orders
-- [ ] Template-based document generation
-- [ ] Advanced timeline visualization
-- [ ] Export capabilities (Word, PDF)
-- [ ] Smart notifications and reminders
-- [ ] Bundle builder with pagination
-- [ ] Chronology export for witness statements
+- [x] **PDF bundle generation** with hyperlinked index and pagination
+- [x] **Full-text search** across documents (SQLite FTS5)
+- [x] **Email parsing and auto-logging** (.eml and .msg support)
+- [x] **Template-based document generation** with Jinja2 engine
+- [x] **Word/PDF export capabilities** (case summaries, timeline, notes)
+- [x] **Advanced timeline** visualization and export
+
+See `UPGRADE_GUIDE.md` for full documentation of new features!
+
+## 🚧 Future Enhancements (Phase 4+)
+
+- [ ] Auto-detect deadlines from court orders using OCR/AI
+- [ ] Smart notifications and email reminders
+- [ ] Advanced bundle builder with drag-and-drop reordering
+- [ ] OCR for scanned documents
+- [ ] Mobile-responsive interface
+- [ ] Case analytics and statistics
+- [ ] Bulk operations (delete, move, update)
+- [ ] Advanced reporting and dashboards
 
 ## 📝 License
 
@@ -351,8 +427,12 @@ This software is designed as a personal organizational tool. It does not constit
 - Python 3.x
 - FastAPI
 - SQLAlchemy
-- SQLite
+- SQLite (with FTS5 full-text search)
+- ReportLab (PDF generation)
+- python-docx (Word document generation)
+- Jinja2 (template engine)
+- PyPDF2 (PDF manipulation)
 - Vanilla JavaScript
 - HTML5/CSS3
 
-**Version:** 1.0.0 (MVP - Phase 1)
+**Version:** 2.0.0 (Phase 1, 2 & 3 Complete)

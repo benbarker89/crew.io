@@ -1,0 +1,26 @@
+{
+  "name": "Subject Access Request",
+  "description": "GDPR Subject Access Request letter",
+  "category": "Correspondence",
+  "fields": [
+    {
+      "name": "recipient_name",
+      "label": "Recipient Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "recipient_address",
+      "label": "Recipient Address",
+      "type": "textarea",
+      "required": true
+    },
+    {
+      "name": "data_requested",
+      "label": "Data Requested",
+      "type": "textarea",
+      "required": true
+    }
+  ],
+  "content": "{{ recipient_name }}\n{{ recipient_address }}\n\n{{ today }}\n\nDear Sir/Madam,\n\n## SUBJECT ACCESS REQUEST UNDER GDPR\n\n**Re: {{ case_title }}**\n\nI am writing to make a formal request under the General Data Protection Regulation (GDPR) for access to personal data held about me by your organization.\n\n## Information Requested\n\n{{ data_requested }}\n\n## Legal Basis\n\nThis request is made under Article 15 of the GDPR, which gives me the right to obtain:\n- Confirmation that my data is being processed\n- Access to my personal data\n- Other supplementary information\n\n## Time Limit\n\nPlease provide the requested information within one month of receipt of this request, as required by the GDPR.\n\n## Format\n\nPlease provide the information in electronic format where possible.\n\nYours faithfully,\n\n{{ primary_contact_name }}\n"
+}

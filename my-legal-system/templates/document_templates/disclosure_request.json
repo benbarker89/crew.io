@@ -1,0 +1,26 @@
+{
+  "name": "Disclosure Request",
+  "description": "Request for disclosure of documents",
+  "category": "Correspondence",
+  "fields": [
+    {
+      "name": "recipient_name",
+      "label": "Recipient Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "documents_requested",
+      "label": "Documents Requested",
+      "type": "textarea",
+      "required": true
+    },
+    {
+      "name": "deadline_date",
+      "label": "Deadline Date",
+      "type": "date",
+      "required": true
+    }
+  ],
+  "content": "{{ recipient_name }}\n\n{{ today }}\n\nDear {{ recipient_name }},\n\n## REQUEST FOR DISCLOSURE\n\n**Case:** {{ case_number }} - {{ case_title }}\n\nI write to request disclosure of the following documents:\n\n{{ documents_requested }}\n\n## Deadline\n\nPlease provide the requested documents by {{ deadline_date }}.\n\n## Standard Disclosure\n\nThis request is made in accordance with the tribunal's standard disclosure obligations. If you believe any documents are not relevant or are privileged, please provide a list of such documents with an explanation.\n\n## Format\n\nPlease provide documents in their original format where possible.\n\nI look forward to receiving the requested disclosure by the specified deadline.\n\nYours sincerely,\n\n{{ primary_contact_name }}\n"
+}

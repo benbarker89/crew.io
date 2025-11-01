@@ -1,0 +1,32 @@
+{
+  "name": "Witness Statement",
+  "description": "Standard witness statement for tribunal proceedings",
+  "category": "Evidence",
+  "fields": [
+    {
+      "name": "witness_name",
+      "label": "Witness Name",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "witness_address",
+      "label": "Witness Address",
+      "type": "textarea",
+      "required": true
+    },
+    {
+      "name": "statement_date",
+      "label": "Statement Date",
+      "type": "date",
+      "required": true
+    },
+    {
+      "name": "statement_content",
+      "label": "Statement Content",
+      "type": "textarea",
+      "required": true
+    }
+  ],
+  "content": "## WITNESS STATEMENT\n\n**Name:** {{ witness_name }}\n\n**Address:** {{ witness_address }}\n\n**Case:** {{ case_number }} - {{ case_title }}\n\n**Date:** {{ statement_date }}\n\n---\n\n## STATEMENT OF {{ witness_name }}\n\nI, {{ witness_name }}, make this statement in support of the claim/response in the above matter.\n\n## Background\n\n{{ statement_content }}\n\n## Declaration\n\nI believe that the facts stated in this witness statement are true. I understand that proceedings for contempt of court may be brought against anyone who makes, or causes to be made, a false statement in a document verified by a statement of truth without an honest belief in its truth.\n\n**Signed:** _______________________\n\n**Name:** {{ witness_name }}\n\n**Date:** {{ statement_date }}\n"
+}
