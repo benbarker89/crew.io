@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Case Management - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>⚖️ Legal Case Management System</h1>
+            <p class="subtitle">Your Personal Legal Assistant</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav>
+            <a href="index.html" class="active">Dashboard</a>
+            <a href="case_view.html">Cases</a>
+            <a href="#" onclick="showNewCaseModal()">+ New Case</a>
+        </nav>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Next Steps Section - Most Prominent -->
+            <section class="next-steps-section">
+                <h2>🎯 YOUR NEXT STEPS</h2>
+                <div id="nextStepsContainer" class="next-steps-container">
+                    <p class="loading">Loading next steps...</p>
+                </div>
+            </section>
+
+            <!-- Active Cases Overview -->
+            <section class="cases-overview">
+                <h2>Active Cases</h2>
+                <div id="casesContainer" class="cases-grid">
+                    <p class="loading">Loading cases...</p>
+                </div>
+            </section>
+
+            <!-- Statistics Cards -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="totalCases">0</h3>
+                        <p>Active Cases</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="urgentTasks">0</h3>
+                        <p>Urgent Tasks</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="upcomingDeadlines">0</h3>
+                        <p>Upcoming Deadlines</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalDocuments">0</h3>
+                        <p>Documents</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- New Case Modal -->
+    <div id="newCaseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideNewCaseModal()">&times;</span>
+            <h2>Create New Case</h2>
+            <form id="newCaseForm" onsubmit="createCase(event)">
+                <div class="form-group">
+                    <label for="caseNumber">Case Number *</label>
+                    <input type="text" id="caseNumber" required placeholder="ET-2025-001">
+                </div>
+                <div class="form-group">
+                    <label for="caseTitle">Title *</label>
+                    <input type="text" id="caseTitle" required placeholder="Smith v. ESHT">
+                </div>
+                <div class="form-group">
+                    <label for="caseType">Case Type *</label>
+                    <select id="caseType" required>
+                        <option value="">Select type...</option>
+                        <option value="Employment Tribunal">Employment Tribunal</option>
+                        <option value="Criminal">Criminal</option>
+                        <option value="Regulatory Investigation">Regulatory Investigation</option>
+                        <option value="County Court">County Court</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <select id="priority">
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Urgent">Urgent</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="missionStatement">Mission Statement</label>
+                    <textarea id="missionStatement" rows="3" placeholder="Secure maximum compensation and public accountability for disability discrimination..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideNewCaseModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Case</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Details - Legal Case Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>⚖️ Legal Case Management System</h1>
+            <p class="subtitle">Case Details</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="case_view.html" class="active">Cases</a>
+            <a href="#" onclick="showNewCaseModal()">+ New Case</a>
+        </nav>
+
+        <!-- Case Selector -->
+        <section class="case-selector">
+            <label for="caseSelect">Select Case:</label>
+            <select id="caseSelect" onchange="loadCaseDetails()">
+                <option value="">Loading cases...</option>
+            </select>
+        </section>
+
+        <!-- Main Content -->
+        <main id="caseDetailsContainer">
+            <p class="loading">Select a case to view details</p>
+        </main>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideTaskModal()">&times;</span>
+            <h2>Create New Task</h2>
+            <form id="newTaskForm" onsubmit="createTask(event)">
+                <input type="hidden" id="taskCaseId">
+                <div class="form-group">
+                    <label for="taskTitle">Task Title *</label>
+                    <input type="text" id="taskTitle" required placeholder="Complete ET3 response">
+                </div>
+                <div class="form-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" rows="3" placeholder="Review respondent's ET3, draft reply, file with tribunal"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="taskPriority">Priority</label>
+                    <select id="taskPriority">
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Urgent">Urgent</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="taskDueDate">Due Date</label>
+                    <input type="datetime-local" id="taskDueDate">
+                </div>
+                <div class="form-group">
+                    <label for="taskEstimatedHours">Estimated Hours</label>
+                    <input type="number" id="taskEstimatedHours" step="0.5" min="0" placeholder="2.5">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideTaskModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Milestone Modal -->
+    <div id="milestoneModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideMilestoneModal()">&times;</span>
+            <h2>Create New Milestone</h2>
+            <form id="newMilestoneForm" onsubmit="createMilestone(event)">
+                <input type="hidden" id="milestoneCaseId">
+                <div class="form-group">
+                    <label for="milestoneTitle">Milestone Title *</label>
+                    <input type="text" id="milestoneTitle" required placeholder="Complete witness statements">
+                </div>
+                <div class="form-group">
+                    <label for="milestoneType">Milestone Type *</label>
+                    <select id="milestoneType" required>
+                        <option value="">Select type...</option>
+                        <option value="Pre-action">Pre-action</option>
+                        <option value="Procedural">Procedural</option>
+                        <option value="Evidence">Evidence</option>
+                        <option value="Hearing">Hearing</option>
+                        <option value="Outcome">Outcome</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="milestoneDescription">Description</label>
+                    <textarea id="milestoneDescription" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="milestoneTargetDate">Target Date</label>
+                    <input type="date" id="milestoneTargetDate">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideMilestoneModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Milestone</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Document Upload Modal -->
+    <div id="documentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideDocumentModal()">&times;</span>
+            <h2>Upload Document</h2>
+            <form id="uploadDocumentForm" onsubmit="uploadDocument(event)">
+                <input type="hidden" id="documentCaseId">
+                <div class="form-group">
+                    <label for="documentCategory">Category *</label>
+                    <select id="documentCategory" required>
+                        <option value="">Select category...</option>
+                        <option value="Pleadings">Pleadings</option>
+                        <option value="Evidence">Evidence</option>
+                        <option value="Correspondence">Correspondence</option>
+                        <option value="Orders">Orders</option>
+                        <option value="Research">Research</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="documentFile">File *</label>
+                    <input type="file" id="documentFile" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideDocumentModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideNoteModal()">&times;</span>
+            <h2>Create Note</h2>
+            <form id="newNoteForm" onsubmit="createNote(event)">
+                <input type="hidden" id="noteCaseId">
+                <div class="form-group">
+                    <label for="noteTitle">Title</label>
+                    <input type="text" id="noteTitle" placeholder="Meeting with witness">
+                </div>
+                <div class="form-group">
+                    <label for="noteType">Note Type</label>
+                    <select id="noteType">
+                        <option value="Journal">Journal</option>
+                        <option value="Strategy">Strategy</option>
+                        <option value="Research">Research</option>
+                        <option value="Meeting">Meeting</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="noteContent">Content *</label>
+                    <textarea id="noteContent" rows="5" required placeholder="Enter your notes here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="noteTags">Tags (comma-separated)</label>
+                    <input type="text" id="noteTags" placeholder="witness, evidence, statement">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="hideNoteModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
